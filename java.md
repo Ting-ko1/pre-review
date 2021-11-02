@@ -75,7 +75,7 @@ p.eat();
 
 程序输出为：1001， 男人吃饭，前者是Person中的属性，后者是Man中重写的方法。
 
-在对象的多态性中，只能访问父类中声明的属性和方法，如果我想方法其子类的方法应该怎么办？
+在对象的多态性中，只能访问父类中声明的属性和方法，如果我想访问其子类的方法应该怎么办？
 答： 向下转型，使用强制类型转换。
 
 ```java
@@ -203,6 +203,47 @@ public class Bank{
 ③可以在创建对象时对对象的属性等进行初始化
 ④如果有多个非静态代码块，则根据声明的先后顺序执行
 
+### Java类初始化顺序问题
+
+思考题：以下代码的运行结果是什么样？
+![avatar](./img/java/5.png)
+
+答案：
+(5)(1)(10)(6)(9)(3)(2)(9)(8)(7)
+(9)(3)(2)(9)(8)(7)
+
+#### 类的初始化顺序为：先初始化父类，在初始化子类
+
+类初始化的时机：
+
+- 需要创建一个类的实例时需要对类进行初始化
+- main()方法所在的类需要先初始化
+- 子类初始化时会先初始化父类
+
+类初始的过程：每个类初始化时，就是调用`<cinit>`方法
+
+- 静态类变量和静态代码块初始化时需要执行，谁先出现谁先执行。
+- `<cinit>`方法只执行一次（类只加载一次）
+
+#### 实例初始化：每个实例初始化时都要执行一次
+
+- 实例初始化就是执行 `<init>`方法
+- `<init>`方法可能有多个，若构造器有x个，则此方法就有x个
+- 初始化时先调用父类的构造器（进行父类的实例初始化过程），初始化非静态变量和非静态代码块（按照出现顺序执行），最后是子类的构造器。
+- 每次创建对象都要执行`<init>`方法
+
+实例初始化时，不管有没有显示的写`super()`语句，都要先调用父类的构造函数，然后进行自己非静态成员变量的初始化，非静态代码块的初始化，最后调用自己的构造函数。
+
+#### 方法的重写（多态）
+
+在实例初始化时，需要注意多态问题。父类的非静态方法若被子类重写，且正在创建的是子类对象，那么实际调用的方法是子类的方法。
+
+不能重写的方法：
+
+- 静态方法
+- final修饰的方法
+- 父类种private修饰的方法
+
 #### final关键字
 
 final关键字可以用来修饰类，变量和方法。
@@ -318,6 +359,27 @@ public void method() throws NumberFormatException{
 
 ```
 
+#### 注解 Annotation
+
+注解是一种特殊的代码标记，可以在编译，类加载，运行时被读取，被进行处理。注解的形式通常为@+关键字的形式来表示，如(@override, @author)(为了写代码更方便，用来代替繁琐的xml配置)
+
+常用注解：
+
+1. 生成文档相关的注解，如：@author, @version, @param,@return 
+2. 在编译时进行格式检查, 如@override, @SupressWarning(抑制编译器警告)
+3. 跟踪代码依赖性，实现替代配置文件功能， 如@Servlet, @Transcation, @Test
+
+自定义注解格式：@inteface,通常内部成员用value来表示。（配合反射用来实现特定的处理）
+
+元注解：注解的注解，用来说明注解的生命周期，注解范围等。主要有4个元注解,自定义注解一般需要声明前两个元注解。
+
+- @Retention: 指明注解的声明周期，有三种状态，SOURCE(源文件保留), CLASS(字节文件保留, 默认), RUNTIME(运行时保留)
+- @Target: 指定注解可以修饰哪些元素，有多种状态，如：TYPE（类，接口，枚举变量）,FIELD, CONSTRUCTOR, METHOD, PARAMETER, LOCAL_VARIABLE等
+- @Documented: 注解可以被提取到javadoc文档
+- @Inherited： 说明注解是否可以继承
+
+<font color=red>框架=注解+反射+设计模式</font>
+
 #### JavaBean
 
 java语言编写的可重用组件，满足以下三个条件的java类就是JAVABean：
@@ -326,6 +388,31 @@ java语言编写的可重用组件，满足以下三个条件的java类就是JAV
 2) 类有默认构造器
 3) 有获取属性的get、set方法
 
+### Java集合
+
+Java集合可以分为两个体系：Collection接口和Map接口。
+
+- Collection： 单列数据，定义了存取一组数据的方法的集合。又分为多个接口，如：Set接口和List接口。
+    - Set接口：无序的，不可重复的数据。常用的有：HashSet, TreeSet, LinkedHashSet.
+    - List接口：有序，可重复的数据。常用的有：LinkedList, ArrayList,Vector.
+
+- Map: 双列数据，存储了key_value键值对的映射关系。常用的有：HashMap, TreeMap, HashTable, Properties, LinkedHashMap。
+
+#### Collections中的方法
+
+- add(Object e):增加元素到集合中
+- addAll(Collection c): 将集合c中的元素添加到此集合 
+- size(): 获取集合的元素个数
+- isEmpty()： 判断集合中是否有元素
+- clear(): 清空集合元素
+- contains(Object e): 判断集合中是否存在元素
+- containsAll(Collection c): 判断集合c中的元素是否都在该集合中
+- remove(Object e): 删除对象e
+- removeAll(Collection c)): 移除该集合中和集合c中一样的所有元素
+- toArray(): 将集合转换为数据。 返回值是Object类型
+- iterator(): 返回Iterator实例，用于遍历集合中的元素。通常hasNext()和next()搭配使用。
+
+
 #### Arrays类的常用方法
 
 - void sort(int []a): 将数组排序
@@ -333,6 +420,7 @@ java语言编写的可重用组件，满足以下三个条件的java类就是JAV
 - String toString(int []a): 输出数组信息
 - void fill(int[]a, itn val): 将指定值填充到数组中
 - int binarySearch(int []a, itn x): 对排好序的数组进行二分法查找
+- asList(): 静态方法， 将数组转化为集合。
 
 #### ==和equals方法的区别
 
@@ -417,8 +505,288 @@ ConcurrentHashMap利用segment进行了分段，每一段相当于一个小的Ha
 
 #### 1、对AOP的理解
 
-<font color=red>AOP是相对于OOP（面向对象编程）的改进，是用来帮助完成对象之间的协作，以及将程序中的交叉业务逻辑分离出来封装成一个切面，然后注入到对象中。</font>比如说，向安全，日志，事务等服务与程序中的核心业务逻辑没有太大关系，但是这些服务很重要，如果用OOP的方式，那么每个对象里面都有重复的代码来完成相同的功能。AOP就是把这些重复的代码提取出来，封装成切面，注入到对象中。当有新的对象产生时，只要满足切面的条件，切面也可以对新的对象起作用。
+<font color=red>AOP是相对于OOP（面向对象编程）的改进，是用来帮助完成对象之间的协作，以及将程序中的交叉业务逻辑分离出来封装成一个切面，然后注入到对象中。</font>比如说，像安全，日志，事务等服务与程序中的核心业务逻辑没有太大关系，但是这些服务很重要，如果用OOP的方式，那么每个对象里面都有重复的代码来完成相同的功能。AOP就是把这些重复的代码提取出来，封装成切面，注入到对象中。当有新的对象产生时，只要满足切面的条件，切面也可以对新的对象起作用。
 
 #### 2、对IOC的理解
 
-<font color=red>IOC容器本质上是一个Map，里面存放着配置文件中注明的bean，扫描到配置文件时根据类名通过反射生成对象，存到这个容器里。当代码中需要用到这些对象的时候通过依赖注入。</font>比如，在OOP中，对象A依赖对象B，在A初始化或者运行到某一时刻需要B时，A会生成B的对象。而在AOP中，当A需要B时，IOC容器会主动注入对象到B，不需要A来生成，A从主动变成了被动，也就是所谓的控制反转。
+<font color=red>IOC容器本质上是一个Map，里面存放着配置文件中注明的bean，扫描到配置文件时根据类名通过反射生成对象，存到这个容器里。当代码中需要用到这些对象的时候通过依赖注入。</font>比如，在OOP中，对象A依赖对象B，在A初始化或者运行到某一时刻需要B时，A会生成B的对象。而在IOC中，当A需要B时，IOC容器会主动注入对象到B，不需要A来生成，A从主动变成了被动，也就是所谓的控制反转。
+
+### Java多线程
+
+#### Java多线程的创建与使用
+
+创建方式
+
+1. 继承Thread类                             
+2. 重写run()方法                            
+3. 在主线程中创建该类的对象                  
+4. 调用start()方法
+
+```java
+class ThreadTest extends Thread{
+    @Override
+    public void run() {
+        for (int i=0; i<10; i++){
+            System.out.println(Thread.currentThread()+"  "+i);
+        }
+    }
+}
+
+public class Learn{
+    public static void main(String args[]) throws InterruptedException {
+        ThreadTest t=new ThreadTest();  
+        t.start();      //start()方法作用： ①创建一个新线程  ②调用run()方法
+        //t.run();  
+        for (int i=0; i<10; i++){
+            System.out.println(Thread.currentThread()+" "+i+"*********main()******");
+        }
+    }
+
+}
+```
+
+也可以使用匿名类的方法去创建多线程
+
+```java
+public class Learn{
+    public static void main(String args[]) throws InterruptedException {
+        new Thread(){
+            @Override
+            public void run() {
+                for (int i=0; i<10; i++){
+                    System.out.println(Thread.currentThread().getName()+"  "+i);
+                }
+            }
+        }.start();
+        for (int i=0; i<10; i++){
+            System.out.println(Thread.currentThread().getName()+" "+i+"*********main()******");
+        }
+    }
+
+}
+```
+
+<font color=red>注意：直接调用run()方法不会创建新的进程，会使用主线程去执行run()方法里面的代码。只有使用start()方法才是真的创建了多线程。</font>
+
+创建方式二：
+
+1. 创建实现Runnable接口的类
+2. 重写抽象方法run()
+3. 创建该类的对象
+4. 将该类的对象作为参数传给Thread类，生成Thread类对象
+5. 调用Thread类的start()方法
+
+```java
+class MyThread implements Runnable{
+    @Override
+    public void run() {
+        for (int i=0; i<10; i++){
+            System.out.println(Thread.currentThread().getName()+"  "+i);
+        }
+    }
+}
+
+public class Learn{
+    public static void main(String args[]) throws InterruptedException {
+        ThreadTest t=new ThreadTest();
+        t.start();
+        MyThread m= new MyThread();
+        Thread t1=new Thread(m);
+        t1.start();
+        System.out.println(t.isAlive());
+    }
+
+}
+```
+
+两种创建方式的比较：
+开发中，优先选择实现Runnable，原因：
+
+- 实现的方式没有单继承的局限性
+- 更适合处理多个线程有共享数据的情况
+
+其实Thread类本身也实现了Runnable接口
+
+#### Thread类中的常用方法
+
+- start(): 创建一个新线程, 调用run()方法
+- run(): 需要重写的方法，用来实现线程需要进行的操作
+- currentThread(): 静态方法,获取当前执行的线程
+- getName(): 获取当前执行的线程的名字
+- setName(): 设置当前线程的名字，还可以通过构造器来设置
+- yield(): 释放当前cpu的执行权
+- join():在线程a中调用线程b的join()方法，线程a就进入了阻塞状态，直到线程b执行结束。
+- sleep(long millis): 让当前线程睡眠
+- isAlive(): 判断当前线程是否存活。
+
+
+注：给主线程设置名字的方法如下
+
+```java
+Thread.currentThread().setName("主线程");
+```
+
+#### 线程的优先级
+
+优先级：
+MIN_PRIORITY = 1;
+NORM_PRIORITY = 5; (默认)
+MAX_PRIORITY = 10;
+
+如何设置和获取线程的优先级：
+
+- getPriroty(): 获取优先级
+- setProprity(): 设置优先级
+
+#### 线程的生命周期
+
+Java中线程的状态及状态转换：
+
+- NEW:$~~~~~~~~~~~~~~~~~~~~~~$新建态
+- RUNNABLE:$~~~~~~~~~~~~$运行态
+- BLOCKED:$~~~~~~~~~~~~~~$阻塞态
+- WAITTING:$~~~~~~~~~~~~~~$等待态
+- TIMED_WAITING:$~~~~$等待态（等待一定的时间）
+- TERMINATED:$~~~~~~~~~$终止态
+
+![avatar](./img/java/6.png)
+
+#### 线程同步
+
+出现的原因： 多线程操作共享数据时会出现数据不一致的情况。
+
+实现线程同步的方式
+
+方式一：同步代码块
+
+```java
+    synchronized (同步监视器){
+        //需要同步的代码块
+    }
+```
+
+同步监视器：也称为锁，其值可以为任何一个对象。但注意，所有线程共享一把锁。代码示例如下：
+
+```java
+class MyThread implements Runnable{
+    private int ticket=50;
+    Object obj=new Object();
+    @Override
+    public void run() {
+        synchronized(obj){
+            while(ticket>0){
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println(Thread.currentThread().getName()+" 票号 "+ticket);
+                    ticket--;
+            }
+        }
+    }
+}
+
+public class Learn{
+    public static void main(String args[]) throws InterruptedException {
+        MyThread m=new MyThread();
+        Thread t=new Thread(m);
+        Thread t1=new Thread(m);
+        Thread t2=new Thread(m);
+        t.start();
+        t1.start();
+        t2.start();
+    }
+}
+```
+
+注意，这里线程是通过实现Runnable接口来实现的，所以ticket数据是线程之间共享的。如果线程通过继承Thread类来实现，那么上面线程部分的定义中，ticket变量是每个线程独有的。若要对继承Thread类的线程实现同步，则需要保证只有一把锁，保证有共享数据。如下：
+
+```java
+class ThreadTest extends Thread{
+    private static int ticket=50;
+    static Object obj=new Object();         //注意这里obj需要定义成static，否则每个线程都有一把锁
+    @Override
+    public void run() {
+        synchronized(obj){      //还可以使用ThreadTest.class来作为同步锁，就不需要额外创建锁了
+            while(true){
+                if(ticket>0){
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println(Thread.currentThread().getName()+" 票号 "+ticket);
+                    ticket--;
+                }
+            }
+        }
+    }
+}
+```
+
+类名.class语句的作用： 
+![avatar](./img/java/7.png)
+
+synchronized关键字还可以直接在函数声明上说明。如通过实现Runnable接口的线程：
+
+```java
+class MyThread implements Runnable{
+    private int ticket=50;
+    Object obj=new Object();
+    @Override
+    public void run() {
+        synchronized(obj){
+            while(ticket>0){
+                   
+            }
+        }
+    }
+
+    private void synchronized show(){       //同步监视器: this
+         try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                    e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread().getName()+" 票号 "+ticket);
+            ticket--;
+    }   
+}
+```
+
+若是通过继承Thread类来实现线程，在方法声明上直接加synchronized关键字时会有问题，除非此方法是静态方法。当是静态方法时，此时的同步监视器是：类名.class。
+
+
+#### Lock锁解决线程安全问题
+
+使用ReentrantLock来声明锁，利用lock()方法上锁，unlock()方法解锁。以实现Runnable接口方法来写：
+
+```java
+class MyThread implements Runnable{
+    private static int ticket=100;
+    private ReentrantLock lock=new ReentrantLock(true);
+    @Override
+    public void run() {
+            while(true){
+                try {
+                    lock.lock();
+                    if(ticket>0){
+                        System.out.println(Thread.currentThread().getName()+" 票号 "+ticket);
+                        ticket--;
+                    }
+                }finally {
+                    lock.unlock();
+                }
+            }
+    }
+
+```
+
+synchronized和Lock的异同
+相同点：都能用来解决安全问题
+不同点： synchronized同步代码结束后自动释放同步监视器
+        Lock锁需要手动上锁，手动解锁
+
+开发中使用顺序：
+Lock锁--->同步代码块--->同步方法
